@@ -3,11 +3,12 @@ import Link from 'next/link';
 import { AvailabilityCalendar } from '@/components/site/AvailabilityCalendar';
 import { ContactForm } from '@/components/site/ContactForm';
 import { Faq } from '@/components/site/Faq';
-import { FacebookIcon, InstagramIcon, MailIcon, PhoneIcon, PinIcon } from '@/components/site/Icons';
+import { MailIcon, PhoneIcon, PinIcon } from '@/components/site/Icons';
 import { JsonLd } from '@/components/site/JsonLd';
 import { PageHeader } from '@/components/site/PageHeader';
 import { Reveal } from '@/components/site/Reveal';
 import { SectionHeading } from '@/components/site/SectionHeading';
+import { SocialIcon } from '@/components/site/SocialIcon';
 import { ButtonLink } from '@/components/ui/Button';
 import { blockedDateSet, todayIso } from '@/lib/calendar';
 import { FALLBACK_EVENT_TYPES } from '@/lib/constants';
@@ -16,9 +17,11 @@ import {
   getEventTypes,
   getFaqItems,
   getSettings,
+  getSocialLinks,
 } from '@/lib/data';
 import { getSiteUrl } from '@/lib/env';
 import { buildBreadcrumbJsonLd, buildFaqJsonLd } from '@/lib/seo';
+import { platformByKey, socialLabel, withFallbackSocialLinks } from '@/lib/social';
 import { buildMailto } from '@/lib/utils';
 
 export const revalidate = 60;
@@ -33,16 +36,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactPage() {
-  const [settings, faq, eventTypes, blocks] = await Promise.all([
+  const [settings, faq, eventTypes, blocks, links] = await Promise.all([
     getSettings(),
     getFaqItems(),
     getEventTypes(),
     getAvailabilityBlocks(),
+    getSocialLinks(),
   ]);
 
   const siteUrl = getSiteUrl();
   const today = todayIso();
   const phone = settings.phone?.trim();
+  const socialLinks = withFallbackSocialLinks(links, settings);
 
   const typeOptions =
     eventTypes.length > 0
@@ -128,47 +133,28 @@ export default async function ContactPage() {
                     </span>
                   </li>
 
-                  {settings.instagram_url && (
-                    <li>
+                  {socialLinks.map((link) => (
+                    <li key={link.id}>
                       <a
-                        href={settings.instagram_url}
+                        href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-start gap-4 transition-colors hover:text-pine"
                       >
                         <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand-dark text-pine">
-                          <InstagramIcon className="h-4 w-4" />
+                          <SocialIcon platform={link.platform} className="h-4 w-4" />
                         </span>
                         <span>
-                          <span className="block text-sm text-ink-soft">Instagram</span>
-                          <span className="mt-0.5 block text-[0.95rem] text-ink">
-                            {settings.instagram_handle}
+                          <span className="block text-sm text-ink-soft">
+                            {platformByKey(link.platform)?.name ?? link.platform}
+                          </span>
+                          <span className="mt-0.5 block break-all text-[0.95rem] text-ink">
+                            {socialLabel(link)}
                           </span>
                         </span>
                       </a>
                     </li>
-                  )}
-
-                  {settings.facebook_url && (
-                    <li>
-                      <a
-                        href={settings.facebook_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-start gap-4 transition-colors hover:text-pine"
-                      >
-                        <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand-dark text-pine">
-                          <FacebookIcon className="h-4 w-4" />
-                        </span>
-                        <span>
-                          <span className="block text-sm text-ink-soft">Facebook</span>
-                          <span className="mt-0.5 block text-[0.95rem] text-ink">
-                            {settings.facebook_name}
-                          </span>
-                        </span>
-                      </a>
-                    </li>
-                  )}
+                  ))}
                 </ul>
 
                 <div className="mt-10 flex flex-col gap-3">
@@ -218,10 +204,7 @@ export default async function ContactPage() {
       {faq.length > 0 && (
         <section className="section border-t border-sand bg-cream">
           <div className="container-page">
-            <SectionHeading
-              eyebrow={settings.faq_eyebrow}
-              title={settings.contact_faq_title}
-            />
+            <SectionHeading eyebrow={settings.faq_eyebrow} title={settings.contact_faq_title} />
             <div className="mt-10 max-w-3xl">
               <Faq entries={faq.slice(0, 6)} />
               <p className="mt-8 text-sm text-ink-soft">

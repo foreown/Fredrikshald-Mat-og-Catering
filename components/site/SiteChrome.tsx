@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { SiteHeader } from '@/components/site/SiteHeader';
-import { getSettings } from '@/lib/data';
+import { getSettings, getSocialLinks } from '@/lib/data';
+import { withFallbackSocialLinks } from '@/lib/social';
 
 /**
  * Rammen rundt alle offentlige sider: toppmeny, hovedinnhold og footer.
@@ -9,7 +10,8 @@ import { getSettings } from '@/lib/data';
  * ser ut som resten av nettstedet.
  */
 export async function SiteChrome({ children }: { children: ReactNode }) {
-  const settings = await getSettings();
+  const [settings, links] = await Promise.all([getSettings(), getSocialLinks()]);
+  const socialLinks = withFallbackSocialLinks(links, settings);
 
   return (
     <>
@@ -30,7 +32,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <SiteFooter settings={settings} />
+      <SiteFooter settings={settings} socialLinks={socialLinks} />
     </>
   );
 }

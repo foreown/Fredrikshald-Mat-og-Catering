@@ -2,6 +2,7 @@ import { cache } from 'react';
 import { getPublicSupabase } from '@/lib/supabase/public';
 import { DEFAULT_SETTINGS } from '@/lib/constants';
 import { todayIso } from '@/lib/calendar';
+import type { SocialLink } from '@/lib/social';
 import type {
   AvailabilityBlock,
   EventType,
@@ -225,6 +226,25 @@ export const getAvailabilityBlocks = cache(async (): Promise<AvailabilityBlock[]
 
     if (error || !data) return [];
     return data as AvailabilityBlock[];
+  } catch {
+    return [];
+  }
+});
+
+/** Sosiale medier. Redigeres under /admin/innstillinger. */
+export const getSocialLinks = cache(async (): Promise<SocialLink[]> => {
+  const supabase = getPublicSupabase();
+  if (!supabase) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('social_links')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (error || !data) return [];
+    return data as SocialLink[];
   } catch {
     return [];
   }

@@ -1,19 +1,23 @@
 import Link from 'next/link';
 import { Logo } from '@/components/site/Logo';
-import { FacebookIcon, InstagramIcon, MailIcon, PhoneIcon, PinIcon } from '@/components/site/Icons';
+import { MailIcon, PhoneIcon, PinIcon } from '@/components/site/Icons';
+import { SocialIcon } from '@/components/site/SocialIcon';
 import { FOOTER_LINKS, NAV_LINKS } from '@/lib/constants';
+import { platformByKey, socialLabel, type SocialLink } from '@/lib/social';
 import type { SettingsMap } from '@/types';
 
-export function SiteFooter({ settings }: { settings: SettingsMap }) {
+export function SiteFooter({
+  settings,
+  socialLinks = [],
+}: {
+  settings: SettingsMap;
+  socialLinks?: SocialLink[];
+}) {
   const companyName = settings.company_name;
   const email = settings.email;
   const phone = settings.phone?.trim();
   const city = settings.city;
   const address = settings.address?.trim();
-  const instagramUrl = settings.instagram_url?.trim();
-  const instagramHandle = settings.instagram_handle?.trim();
-  const facebookUrl = settings.facebook_url?.trim();
-  const facebookName = settings.facebook_name?.trim();
   const orgNumber = settings.org_number?.trim();
   const year = new Date().getFullYear();
 
@@ -27,30 +31,23 @@ export function SiteFooter({ settings }: { settings: SettingsMap }) {
               {settings.footer_text}
             </p>
 
-            <div className="mt-7 flex items-center gap-3">
-              {instagramUrl && (
-                <a
-                  href={instagramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-card border border-cream/20 text-cream/80 transition-colors hover:border-cream/50 hover:text-cream"
-                  aria-label={`${companyName} på Instagram`}
-                >
-                  <InstagramIcon />
-                </a>
-              )}
-              {facebookUrl && (
-                <a
-                  href={facebookUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-card border border-cream/20 text-cream/80 transition-colors hover:border-cream/50 hover:text-cream"
-                  aria-label={`${companyName} på Facebook`}
-                >
-                  <FacebookIcon />
-                </a>
-              )}
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                {socialLinks.map((link) => (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={platformByKey(link.platform)?.name ?? link.platform}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-card border border-cream/20 text-cream/80 transition-colors hover:border-cream/50 hover:text-cream"
+                    aria-label={`${companyName} på ${platformByKey(link.platform)?.name ?? link.platform}`}
+                  >
+                    <SocialIcon platform={link.platform} />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           <nav aria-label="Footermeny">
@@ -96,32 +93,22 @@ export function SiteFooter({ settings }: { settings: SettingsMap }) {
                 <PinIcon className="mt-0.5 h-4 w-4 shrink-0 text-copper-300" />
                 <span>{[address, city].filter(Boolean).join(', ')}</span>
               </li>
-              {instagramHandle && instagramUrl && (
-                <li>
+              {socialLinks.map((link) => (
+                <li key={link.id}>
                   <a
-                    href={instagramUrl}
+                    href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-start gap-3 text-cream/75 transition-colors hover:text-cream"
                   >
-                    <InstagramIcon className="mt-0.5 h-4 w-4 shrink-0 text-copper-300" />
-                    <span>{instagramHandle}</span>
+                    <SocialIcon
+                      platform={link.platform}
+                      className="mt-0.5 h-4 w-4 shrink-0 text-copper-300"
+                    />
+                    <span className="break-all">{socialLabel(link)}</span>
                   </a>
                 </li>
-              )}
-              {facebookName && facebookUrl && (
-                <li>
-                  <a
-                    href={facebookUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-start gap-3 text-cream/75 transition-colors hover:text-cream"
-                  >
-                    <FacebookIcon className="mt-0.5 h-4 w-4 shrink-0 text-copper-300" />
-                    <span>{facebookName}</span>
-                  </a>
-                </li>
-              )}
+              ))}
             </ul>
           </div>
         </div>
