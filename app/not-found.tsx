@@ -2,13 +2,16 @@ import type { Metadata } from 'next';
 import { SiteChrome } from '@/components/site/SiteChrome';
 import { LogoMark } from '@/components/site/Logo';
 import { ButtonLink } from '@/components/ui/Button';
+import { getSettings } from '@/lib/data';
 
 export const metadata: Metadata = {
   title: 'Siden finnes ikke',
   robots: { index: false, follow: true },
 };
 
-export default function NotFound() {
+export default async function NotFound() {
+  const settings = await getSettings();
+
   return (
     <SiteChrome>
       <section className="section">
@@ -16,10 +19,8 @@ export default function NotFound() {
           <div className="mx-auto flex max-w-xl flex-col items-center py-10 text-center sm:py-16">
             <LogoMark className="h-12 w-12 text-copper-500/60" />
             <p className="eyebrow mt-8">404</p>
-            <h1 className="mt-4 text-display-lg">Oi, denne siden finnes ikke</h1>
-            <p className="lead mt-6">
-              Kanskje lenken er gammel, eller så har vi flyttet på noe. Prøv en av lenkene under.
-            </p>
+            <h1 className="mt-4 text-display-lg">{settings.notfound_title}</h1>
+            <p className="lead mt-6">{settings.notfound_text}</p>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="/" size="lg">

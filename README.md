@@ -3,13 +3,20 @@
 Nettsiden til Fredrikshald Mat &amp; Catering UB — en elevdrevet ungdomsbedrift ved
 Restaurant- og matfag i Halden.
 
-Hele nettsiden styres fra et innebygd adminpanel. Du legger inn bilder, retter,
-priser og kontaktinformasjon direkte på nettsiden, uten å røre kode.
+Hele nettsiden styres fra et innebygd adminpanel. Bilder, retter, priser,
+arrangementer, spørsmål og svar, kontaktinformasjon — og hver eneste overskrift
+og avsnitt på sidene — endrer du direkte på nettsiden, uten å røre kode.
+Der ligger også en kalender for dagene dere ikke kan ta oppdrag.
 
 > **Skal du sette opp nettsiden for første gang?**
 > Følg [`DEPLOY.md`](./DEPLOY.md). Den tar deg gjennom alt, steg for steg, fra
 > tomt GitHub-repo til ferdig nettside i produksjon. Du trenger ingen
 > forkunnskaper om webutvikling.
+>
+> **Merk:** prosjektet har 117 filer. GitHub sin dra-og-slipp i nettleseren
+> klarer bare 100 om gangen, så bruk **GitHub Desktop** til opplastingen
+> (metode A i `DEPLOY.md`). Gjør du det på den andre måten, mister du filer,
+> og Vercel feiler med «Couldn't find any `pages` or `app` directory».
 
 ---
 
@@ -55,8 +62,12 @@ priser og kontaktinformasjon direkte på nettsiden, uten å røre kode.
 | `/admin`                | Dashboard med tall og snarveier                               |
 | `/admin/galleri`        | Laster opp, redigerer og sletter bilder                       |
 | `/admin/meny`           | Legger til retter, priser, allergener og kategorier           |
+| `/admin/arrangementer`  | Legger til og endrer hva dere lager mat til                   |
 | `/admin/anmeldelser`    | Godkjenner, avviser og sletter anmeldelser                    |
-| `/admin/innstillinger`  | Endrer kontaktinfo, forsidetekster, logo og FAQ-svar          |
+| `/admin/faq`            | Legger til og endrer spørsmål og svar                         |
+| `/admin/kalender`       | Merker dager og perioder dere ikke er tilgjengelige           |
+| `/admin/tekster`        | Endrer alle overskrifter og avsnitt, side for side            |
+| `/admin/innstillinger`  | Endrer kontaktinfo, logo og opplysninger om bedriften         |
 
 ---
 
@@ -129,7 +140,11 @@ lightbox, opplasting med fremdrift og varslinger er skrevet fra bunn.
 │   │   │   ├── page.tsx      # dashboard
 │   │   │   ├── galleri/
 │   │   │   ├── meny/
+│   │   │   ├── arrangementer/
 │   │   │   ├── anmeldelser/
+│   │   │   ├── faq/
+│   │   │   ├── kalender/
+│   │   │   ├── tekster/
 │   │   │   └── innstillinger/
 │   │   └── _actions/         # server actions (all skriving til databasen)
 │   ├── api/reviews/          # mottak av nye anmeldelser
@@ -148,6 +163,8 @@ lightbox, opplasting med fremdrift og varslinger er skrevet fra bunn.
 │   ├── supabase/             # klienter for nettleser, server og middleware
 │   ├── auth.ts               # sjekker at brukeren er eier
 │   ├── data.ts               # all lesing til de offentlige sidene
+│   ├── calendar.ts           # datoregning for kalenderen
+│   ├── settings-defaults.ts  # standardtekst for alle redigerbare felter
 │   ├── upload.ts             # bildekomprimering + opplasting med fremdrift
 │   ├── sanitize.ts           # opprydding og validering av skjemadata
 │   ├── seo.ts                # strukturerte data for Google
@@ -206,6 +223,26 @@ npm run typecheck   # sjekker TypeScript-typer
 Alt daglig arbeid gjøres på `/admin`. Du trenger aldri å åpne VS Code eller
 GitHub for å endre innhold.
 
+**Tekster.** Her ligger alt av synlig tekst på nettsiden, delt inn i faner per
+side: forside, om oss, meny, galleri, arrangementer, anmeldelser, kontakt,
+vanlige spørsmål, personvern og 404-siden. Rundt 120 felter til sammen. Fanene
+viser en liten prikk der du har endret noe, og du lagrer alt på én gang.
+
+**Arrangementer.** Hva dere kan lage mat til. Hvert arrangement har navn,
+beskrivelse og eventuelt et eget bilde. De vises på forsiden og på
+arrangementsiden — og de samme navnene fyller nedtrekkslistene i
+kontaktskjemaet, anmeldelsesskjemaet og veiviseren, så du slipper å endre
+det samme flere steder.
+
+**Vanlige spørsmål.** Legg til, endre, skjul eller slett spørsmål. De seks
+første vises også nederst på kontaktsiden.
+
+**Kalender.** Klikk på en dag for å merke den som opptatt, eller legg inn hele
+perioder med «Legg til periode» — for eksempel ferier eller eksamensuker. Hver
+periode kan ha en kort årsak, og kan skjules fra nettsiden hvis dere bare vil
+holde av dagene internt. På kontaktsiden ser besøkende kalenderen, og velger de
+en dato dere er opptatt, får de en vennlig advarsel i skjemaet.
+
 **Galleri.** Last opp bilde, velg kategori, skriv tittel, beskrivelse og
 alt-tekst. Bildene krympes automatisk i nettleseren før de lastes opp
 (maks 2200 px, konvertert til WebP), så nettsiden holder seg rask. Du ser
@@ -220,8 +257,8 @@ lovpålagte. En rett kan skjules midlertidig uten å slettes.
 **Anmeldelser.** Nye anmeldelser får status «venter» og vises ikke offentlig
 før du har godkjent dem. Du kan godkjenne, avvise, sette tilbake eller slette.
 
-**Innstillinger.** E-post, telefon, Instagram, Facebook, forsidetekster,
-footer-tekst, logo og svarene i «Vanlige spørsmål».
+**Innstillinger.** E-post, telefon, Instagram, Facebook, adresse,
+organisasjonsnummer og logo.
 
 ---
 
@@ -282,9 +319,7 @@ Begge deler krever en ny commit til GitHub, siden det er filer i repoet.
 | Farger og skrifter                   | `tailwind.config.ts`                            |
 | Avstander, knappestiler, skjemafelt  | `app/globals.css` og `components/ui/`           |
 | Menypunktene i toppmenyen            | `NAV_LINKS` i `lib/constants.ts`                |
-| Arrangementstypene som vises         | `EVENT_OFFERINGS` i `lib/constants.ts`          |
-| Spørsmål og svar i FAQ               | `lib/faq.ts` (svarene kan også settes i admin)  |
-| Tekstene på «Om oss»                 | `app/(site)/om-oss/page.tsx`                    |
+| Rekkefølgen på seksjonene på forsiden | `app/(site)/page.tsx`                          |
 | Søkeord og beskrivelser (SEO)        | `app/layout.tsx` og `metadata` i hver side      |
 
 Etter en endring: commit og push til GitHub. Vercel bygger og publiserer

@@ -1,7 +1,11 @@
 import { cache } from 'react';
 import { getPublicSupabase } from '@/lib/supabase/public';
 import { DEFAULT_SETTINGS } from '@/lib/constants';
+import { todayIso } from '@/lib/calendar';
 import type {
+  AvailabilityBlock,
+  EventType,
+  FaqItem,
   GalleryCategory,
   GalleryImage,
   MenuCategory,
@@ -163,3 +167,65 @@ export function calculateReviewStats(reviews: Review[]): ReviewStats {
     average: Math.round((total / reviews.length) * 10) / 10,
   };
 }
+
+/** Arrangementstypene bedriften tilbyr. Redigeres under /admin/arrangementer. */
+export const getEventTypes = cache(async (): Promise<EventType[]> => {
+  const supabase = getPublicSupabase();
+  if (!supabase) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('event_types')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (error || !data) return [];
+    return data as EventType[];
+  } catch {
+    return [];
+  }
+});
+
+/** Spørsmål og svar. Redigeres under /admin/faq. */
+export const getFaqItems = cache(async (): Promise<FaqItem[]> => {
+  const supabase = getPublicSupabase();
+  if (!supabase) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('faq_items')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (error || !data) return [];
+    return data as FaqItem[];
+  } catch {
+    return [];
+  }
+});
+
+/**
+ * Perioder bedriften ikke er tilgjengelig.
+ * Henter kun perioder som ikke er ferdig passert, og som er merket synlige.
+ */
+export const getAvailabilityBlocks = cache(async (): Promise<AvailabilityBlock[]> => {
+  const supabase = getPublicSupabase();
+  if (!supabase) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('availability_blocks')
+      .select('*')
+      .eq('is_public', true)
+      .gte('ends_on', todayIso())
+      .order('starts_on', { ascending: true })
+      .limit(200);
+
+    if (error || !data) return [];
+    return data as AvailabilityBlock[];
+  } catch {
+    return [];
+  }
+});

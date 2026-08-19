@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { EVENT_TYPES, REVIEW_LIMITS } from '@/lib/constants';
+import { REVIEW_LIMITS } from '@/lib/constants';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from '@/lib/env';
 
 export const runtime = 'nodejs';
@@ -75,7 +75,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (eventType && !EVENT_TYPES.includes(eventType as (typeof EVENT_TYPES)[number])) {
+  // Arrangementstypene redigeres i adminpanelet, så vi validerer lengde
+  // i stedet for å låse listen fast i koden.
+  if (eventType.length > REVIEW_LIMITS.eventTypeMax) {
     return bad('Velg en gyldig type arrangement.');
   }
 

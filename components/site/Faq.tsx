@@ -1,14 +1,17 @@
-import type { FaqEntry } from '@/lib/faq';
+import type { FaqItem } from '@/types';
 
 /**
  * Trekkspill bygget på <details>/<summary>.
  * Det gir riktig oppførsel med tastatur og skjermleser uten JavaScript.
+ * Spørsmålene redigeres under /admin/faq.
  */
-export function Faq({ entries }: { entries: FaqEntry[] }) {
+export function Faq({ entries }: { entries: FaqItem[] }) {
+  if (entries.length === 0) return null;
+
   return (
     <div className="border-t border-sand">
       {entries.map((entry) => (
-        <details key={entry.question} className="group border-b border-sand">
+        <details key={entry.id} className="group border-b border-sand">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-left">
             <span className="font-display text-lg font-semibold text-ink sm:text-xl">
               {entry.question}
@@ -22,7 +25,9 @@ export function Faq({ entries }: { entries: FaqEntry[] }) {
             </span>
           </summary>
           <div className="max-w-2xl pb-7 pr-10">
-            <p className="text-[0.95rem] leading-relaxed text-ink-muted">{entry.answer}</p>
+            <p className="whitespace-pre-line text-[0.95rem] leading-relaxed text-ink-muted">
+              {entry.answer}
+            </p>
           </div>
         </details>
       ))}

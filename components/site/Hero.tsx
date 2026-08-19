@@ -4,18 +4,18 @@ import { ButtonLink } from '@/components/ui/Button';
 import { buildMailto } from '@/lib/utils';
 import type { GalleryImage, SettingsMap } from '@/types';
 
-const FACTS = [
-  { term: 'Elevdrevet', description: 'Ungdomsbedrift ved Restaurant- og matfag' },
-  { term: 'Laget fra bunn', description: 'Vi lager maten selv' },
-  { term: 'Lokalt', description: 'Vi holder til i Halden' },
-];
-
 export function Hero({ settings, images }: { settings: SettingsMap; images: GalleryImage[] }) {
   const contactHref = buildMailto(
     settings.email,
     'Forespørsel om catering',
     `Hei ${settings.company_name}!\n\nJeg ønsker å høre om dere kan levere mat til et arrangement.\n\nType arrangement:\nDato:\nAntall personer:\n\nMed vennlig hilsen\n`,
   );
+
+  const facts = [
+    { term: settings.hero_fact1_title, description: settings.hero_fact1_text },
+    { term: settings.hero_fact2_title, description: settings.hero_fact2_text },
+    { term: settings.hero_fact3_title, description: settings.hero_fact3_text },
+  ].filter((fact) => fact.term?.trim());
 
   return (
     <section className="relative">
@@ -28,10 +28,12 @@ export function Hero({ settings, images }: { settings: SettingsMap; images: Gall
       <div className="container-page relative">
         <div className="grid items-center gap-14 pb-16 pt-10 sm:pt-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-20 lg:pb-28 lg:pt-20">
           <Reveal>
-            <p className="eyebrow flex items-center gap-3">
-              <span aria-hidden="true" className="h-px w-8 bg-copper-500" />
-              {settings.hero_eyebrow}
-            </p>
+            {settings.hero_eyebrow && (
+              <p className="eyebrow flex items-center gap-3">
+                <span aria-hidden="true" className="h-px w-8 bg-copper-500" />
+                {settings.hero_eyebrow}
+              </p>
+            )}
 
             <h1 className="mt-6 text-display-xl">{settings.hero_title}</h1>
 
@@ -39,21 +41,25 @@ export function Hero({ settings, images }: { settings: SettingsMap; images: Gall
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
               <ButtonLink href={contactHref} size="lg">
-                Ta kontakt
+                {settings.hero_cta_primary || 'Ta kontakt'}
               </ButtonLink>
               <ButtonLink href="/meny" variant="secondary" size="lg">
-                Se maten vår
+                {settings.hero_cta_secondary || 'Se maten vår'}
               </ButtonLink>
             </div>
 
-            <dl className="mt-12 grid max-w-lg grid-cols-1 gap-5 border-t border-sand pt-7 sm:grid-cols-3 sm:gap-6">
-              {FACTS.map((fact) => (
-                <div key={fact.term}>
-                  <dt className="font-display text-[1.05rem] font-semibold text-pine">{fact.term}</dt>
-                  <dd className="mt-1 text-sm leading-snug text-ink-soft">{fact.description}</dd>
-                </div>
-              ))}
-            </dl>
+            {facts.length > 0 && (
+              <dl className="mt-12 grid max-w-lg grid-cols-1 gap-5 border-t border-sand pt-7 sm:grid-cols-3 sm:gap-6">
+                {facts.map((fact) => (
+                  <div key={fact.term}>
+                    <dt className="font-display text-[1.05rem] font-semibold text-pine">
+                      {fact.term}
+                    </dt>
+                    <dd className="mt-1 text-sm leading-snug text-ink-soft">{fact.description}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
           </Reveal>
 
           <Reveal delay={120} className="relative">

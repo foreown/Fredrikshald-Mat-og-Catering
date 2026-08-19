@@ -3,23 +3,24 @@ import { CtaBand } from '@/components/site/CtaBand';
 import { Faq } from '@/components/site/Faq';
 import { JsonLd } from '@/components/site/JsonLd';
 import { PageHeader } from '@/components/site/PageHeader';
-import { getSettings } from '@/lib/data';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { getFaqItems, getSettings } from '@/lib/data';
 import { getSiteUrl } from '@/lib/env';
-import { buildFaq } from '@/lib/faq';
 import { buildBreadcrumbJsonLd, buildFaqJsonLd } from '@/lib/seo';
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: 'Vanlige spørsmål',
-  description:
-    'Svar på vanlige spørsmål om catering fra Fredrikshald Mat & Catering UB: antall gjester, levering, allergier, betaling og bestilling.',
-  alternates: { canonical: '/faq' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  return {
+    title: settings.faq_eyebrow || 'Vanlige spørsmål',
+    description: settings.faq_description,
+    alternates: { canonical: '/faq' },
+  };
+}
 
 export default async function FaqPage() {
-  const settings = await getSettings();
-  const faq = buildFaq(settings);
+  const [settings, faq] = await Promise.all([getSettings(), getFaqItems()]);
   const siteUrl = getSiteUrl();
 
   return (
@@ -27,21 +28,28 @@ export default async function FaqPage() {
       <JsonLd
         data={buildBreadcrumbJsonLd(siteUrl, [
           { name: 'Forside', path: '/' },
-          { name: 'Vanlige spørsmål', path: '/faq' },
+          { name: settings.faq_eyebrow || 'Vanlige spørsmål', path: '/faq' },
         ])}
       />
-      <JsonLd data={buildFaqJsonLd(faq)} />
+      {faq.length > 0 && <JsonLd data={buildFaqJsonLd(faq)} />}
 
       <PageHeader
-        eyebrow="Vanlige spørsmål"
-        title="Spørsmål vi ofte får"
-        description="Står ikke svaret her, er det bare å ta kontakt — vi svarer gjerne."
+        eyebrow={settings.faq_eyebrow}
+        title={settings.faq_title}
+        description={settings.faq_description}
       />
 
       <section className="section-after-header">
         <div className="container-page">
           <div className="max-w-3xl">
-            <Faq entries={faq} />
+            {faq.length > 0 ? (
+              <Faq entries={faq} />
+            ) : (
+              <EmptyState
+                title="Ingen spørsmål lagt inn ennå"
+                description="Spørsmål og svar legges inn i adminpanelet."
+              />
+            )}
           </div>
         </div>
       </section>

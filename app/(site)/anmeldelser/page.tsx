@@ -7,37 +7,50 @@ import { ReviewCard } from '@/components/site/ReviewCard';
 import { ReviewForm } from '@/components/site/ReviewForm';
 import { ReviewsSummary } from '@/components/site/ReviewsSummary';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { calculateReviewStats, getApprovedReviews, getSettings } from '@/lib/data';
+import { FALLBACK_EVENT_TYPES } from '@/lib/constants';
+import { calculateReviewStats, getApprovedReviews, getEventTypes, getSettings } from '@/lib/data';
 import { getSiteUrl } from '@/lib/env';
 import { buildBreadcrumbJsonLd } from '@/lib/seo';
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: 'Anmeldelser',
-  description:
-    'Les hva kunder sier om Fredrikshald Mat & Catering UB — og legg gjerne igjen din egen anmeldelse.',
-  alternates: { canonical: '/anmeldelser' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  return {
+    title: settings.reviews_eyebrow || 'Anmeldelser',
+    description: settings.reviews_description,
+    alternates: { canonical: '/anmeldelser' },
+  };
+}
 
 export default async function ReviewsPage() {
-  const [settings, reviews] = await Promise.all([getSettings(), getApprovedReviews()]);
+  const [settings, reviews, eventTypes] = await Promise.all([
+    getSettings(),
+    getApprovedReviews(),
+    getEventTypes(),
+  ]);
+
   const stats = calculateReviewStats(reviews);
   const siteUrl = getSiteUrl();
+
+  const typeOptions =
+    eventTypes.length > 0
+      ? [...eventTypes.map((type) => type.title), 'Annet']
+      : [...FALLBACK_EVENT_TYPES];
 
   return (
     <>
       <JsonLd
         data={buildBreadcrumbJsonLd(siteUrl, [
           { name: 'Forside', path: '/' },
-          { name: 'Anmeldelser', path: '/anmeldelser' },
+          { name: settings.reviews_eyebrow || 'Anmeldelser', path: '/anmeldelser' },
         ])}
       />
 
       <PageHeader
-        eyebrow="Anmeldelser"
-        title="Hva kundene våre sier"
-        description="Har du prøvd maten vår? Vi setter stor pris på om du deler noen ord."
+        eyebrow={settings.reviews_eyebrow}
+        title={settings.reviews_title}
+        description={settings.reviews_description}
       >
         {stats.count > 0 && <ReviewsSummary stats={stats} />}
       </PageHeader>
@@ -58,20 +71,20 @@ export default async function ReviewsPage() {
                 </ul>
               ) : (
                 <EmptyState
-                  title="Ingen anmeldelser ennå"
-                  description="Vi er en ny ungdomsbedrift, og har ikke fått anmeldelser ennå. Er du den første som vil dele en tilbakemelding, blir vi glade."
+                  title={settings.reviews_empty_title}
+                  description={settings.reviews_empty_text}
                 />
               )}
             </div>
 
             <div id="skriv" className="scroll-mt-28">
-              <h2 className="text-display-sm">Skriv en anmeldelse</h2>
-              <p className="prose-body mt-4">
-                Alle anmeldelser leses gjennom før de publiseres, så det kan ta litt tid før din
-                dukker opp her.
-              </p>
+              <h2 className="text-display-sm">{settings.reviews_form_title}</h2>
+              <p className="prose-body mt-4">{settings.reviews_form_text}</p>
               <div className="mt-8">
-                <ReviewForm />
+                <ReviewForm
+                  eventTypes={typeOptions}
+                  thanksMessage={settings.reviews_thanks}
+                />
               </div>
             </div>
           </div>

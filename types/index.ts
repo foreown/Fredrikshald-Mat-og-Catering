@@ -18,11 +18,14 @@ export interface Profile {
   updated_at?: string;
 }
 
+export type SettingArea = 'innstillinger' | 'tekster';
+
 export interface SiteSetting {
   key: string;
   value: string;
   label: string;
   hint: string | null;
+  area: SettingArea;
   group_name: string;
   input_type: SettingInputType;
   sort_order: number;
@@ -84,6 +87,40 @@ export interface MenuItem {
 
 export interface MenuCategoryWithItems extends MenuCategory {
   items: MenuItem[];
+}
+
+export interface EventType {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  storage_path: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/** En periode bedriften ikke tar oppdrag. Én enkelt dag har samme start og slutt. */
+export interface AvailabilityBlock {
+  id: string;
+  starts_on: string;
+  ends_on: string;
+  reason: string | null;
+  is_public: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Review {

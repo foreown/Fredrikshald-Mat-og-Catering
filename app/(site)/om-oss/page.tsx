@@ -10,45 +10,42 @@ import { buildBreadcrumbJsonLd } from '@/lib/seo';
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: 'Om oss',
-  description:
-    'Fredrikshald Mat & Catering UB er en elevdrevet ungdomsbedrift ved Restaurant- og matfag i Halden. Vi lager maten selv og leverer til lokale arrangementer.',
-  alternates: { canonical: '/om-oss' },
-};
-
-const VALUES = [
-  {
-    title: 'Vi lager maten selv',
-    body: 'Alt vi leverer er laget av oss. Det er elevene i bedriften som planlegger, forbereder og lager maten.',
-  },
-  {
-    title: 'Vi lærer av å drive på ordentlig',
-    body: 'Ungdomsbedrift betyr at vi driver bedriften selv, med ekte kunder og ekte frister. Det er slik vi får praktisk erfaring.',
-  },
-  {
-    title: 'Vi holder til i Halden',
-    body: 'Vi er lokale, og ønsker å lage mat til arrangementer i nærområdet vårt.',
-  },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  return {
+    title: settings.about_eyebrow || 'Om oss',
+    description: settings.about_description,
+    alternates: { canonical: '/om-oss' },
+  };
+}
 
 export default async function AboutPage() {
   const [settings, images] = await Promise.all([getSettings(), getShowcaseImages(4)]);
   const siteUrl = getSiteUrl();
+
+  const paragraphs = [settings.about_body_1, settings.about_body_2, settings.about_body_3].filter(
+    (text) => text?.trim(),
+  );
+
+  const values = [
+    { title: settings.about_value1_title, body: settings.about_value1_text },
+    { title: settings.about_value2_title, body: settings.about_value2_text },
+    { title: settings.about_value3_title, body: settings.about_value3_text },
+  ].filter((value) => value.title?.trim());
 
   return (
     <>
       <JsonLd
         data={buildBreadcrumbJsonLd(siteUrl, [
           { name: 'Forside', path: '/' },
-          { name: 'Om oss', path: '/om-oss' },
+          { name: settings.about_eyebrow || 'Om oss', path: '/om-oss' },
         ])}
       />
 
       <PageHeader
-        eyebrow="Om oss"
-        title="Vi er elever ved Restaurant- og matfag"
-        description="Fredrikshald Mat & Catering UB er en ungdomsbedrift. Vi driver bedriften selv, og lager maten selv."
+        eyebrow={settings.about_eyebrow}
+        title={settings.about_title}
+        description={settings.about_description}
       />
 
       <section className="section-after-header">
@@ -56,33 +53,27 @@ export default async function AboutPage() {
           <div className="grid gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-20">
             <Reveal>
               <div className="max-w-xl">
-                <h2 className="text-display-sm">Hvem vi er</h2>
+                <h2 className="text-display-sm">{settings.about_body_title}</h2>
                 <div className="prose-body mt-6 space-y-5">
-                  <p>
-                    Vi går på Restaurant- og matfag, og driver Fredrikshald Mat &amp; Catering UB
-                    som en del av utdanningen vår. En ungdomsbedrift fungerer som en vanlig bedrift:
-                    vi har ansvaret for planlegging, innkjøp, matlaging, kundekontakt og økonomi.
-                  </p>
-                  <p>
-                    Vi lager maten selv. Det betyr at det er vi som står på kjøkkenet, og at maten
-                    dere får er laget fra bunn av oss som elever.
-                  </p>
-                  <p>
-                    Målet vårt er å levere god mat til arrangementer i Halden og nærområdet — og
-                    samtidig få praktisk erfaring med faget vi utdanner oss i.
-                  </p>
+                  {paragraphs.map((text) => (
+                    <p key={text.slice(0, 40)}>{text}</p>
+                  ))}
                 </div>
 
-                <ul className="mt-12 space-y-8">
-                  {VALUES.map((value) => (
-                    <li key={value.title} className="border-t border-sand pt-6">
-                      <h3 className="font-display text-xl font-semibold text-ink">{value.title}</h3>
-                      <p className="mt-2.5 text-[0.95rem] leading-relaxed text-ink-muted">
-                        {value.body}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
+                {values.length > 0 && (
+                  <ul className="mt-12 space-y-8">
+                    {values.map((value) => (
+                      <li key={value.title} className="border-t border-sand pt-6">
+                        <h3 className="font-display text-xl font-semibold text-ink">
+                          {value.title}
+                        </h3>
+                        <p className="mt-2.5 text-[0.95rem] leading-relaxed text-ink-muted">
+                          {value.body}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </Reveal>
 
@@ -111,35 +102,37 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Plass til bilder av teamet — legges inn fra adminpanelet. */}
-      <section className="section-tight border-t border-sand bg-cream-100">
-        <div className="container-page">
-          <Reveal>
-            <div className="max-w-2xl">
-              <p className="eyebrow">Teamet</p>
-              <h2 className="mt-4 text-display-sm">Elevene bak bedriften</h2>
-              <p className="prose-body mt-5">
-                Vi legger ut bilder av oss som jobber i bedriften her. Bildene lastes opp i
-                adminpanelet under kategorien «Arrangement», og dukker opp automatisk.
-              </p>
-            </div>
-          </Reveal>
+      {settings.about_team_title && (
+        <section className="section-tight border-t border-sand bg-cream-100">
+          <div className="container-page">
+            <Reveal>
+              <div className="max-w-2xl">
+                {settings.about_team_eyebrow && (
+                  <p className="eyebrow">{settings.about_team_eyebrow}</p>
+                )}
+                <h2 className="mt-4 text-display-sm">{settings.about_team_title}</h2>
+                {settings.about_team_text && (
+                  <p className="prose-body mt-5">{settings.about_team_text}</p>
+                )}
+              </div>
+            </Reveal>
 
-          <ul className="mt-12 grid grid-cols-2 gap-5 lg:grid-cols-4">
-            {[0, 1, 2, 3].map((index) => (
-              <li key={index}>
-                <Reveal delay={index * 70}>
-                  <MediaFrame
-                    image={images[index] ?? null}
-                    ratio="portrait"
-                    sizes="(max-width: 640px) 45vw, 23vw"
-                  />
-                </Reveal>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+            <ul className="mt-12 grid grid-cols-2 gap-5 lg:grid-cols-4">
+              {[0, 1, 2, 3].map((index) => (
+                <li key={index}>
+                  <Reveal delay={index * 70}>
+                    <MediaFrame
+                      image={images[index] ?? null}
+                      ratio="portrait"
+                      sizes="(max-width: 640px) 45vw, 23vw"
+                    />
+                  </Reveal>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       <CtaBand settings={settings} />
     </>

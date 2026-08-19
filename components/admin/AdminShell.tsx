@@ -12,7 +12,11 @@ const NAV = [
   { href: '/admin', label: 'Dashboard', exact: true },
   { href: '/admin/galleri', label: 'Galleri' },
   { href: '/admin/meny', label: 'Meny' },
+  { href: '/admin/arrangementer', label: 'Arrangementer' },
   { href: '/admin/anmeldelser', label: 'Anmeldelser' },
+  { href: '/admin/faq', label: 'Vanlige spørsmål' },
+  { href: '/admin/kalender', label: 'Kalender' },
+  { href: '/admin/tekster', label: 'Tekster' },
   { href: '/admin/innstillinger', label: 'Innstillinger' },
 ];
 
@@ -50,6 +54,32 @@ function NavIcon({ href, className }: { href: string; className?: string }) {
       )}
       {href === '/admin/anmeldelser' && (
         <path d="M12 4.2l2.3 4.7 5.2.75-3.75 3.65.9 5.15L12 16l-4.65 2.45.9-5.15L4.5 9.65l5.2-.75z" />
+      )}
+      {href === '/admin/arrangementer' && (
+        <>
+          <path d="M4 9.5h16" />
+          <rect x="4" y="4.5" width="16" height="15" rx="2" />
+          <path d="M9 13h6M9 16h4" />
+        </>
+      )}
+      {href === '/admin/faq' && (
+        <>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M9.6 9.6a2.5 2.5 0 1 1 3.2 3.1c-.6.3-.9.8-.9 1.4v.3" />
+          <path d="M12 17.2h.01" />
+        </>
+      )}
+      {href === '/admin/kalender' && (
+        <>
+          <rect x="3.5" y="5" width="17" height="15" rx="2" />
+          <path d="M3.5 10h17M8 3.5v3M16 3.5v3" />
+          <path d="M8 14h3v3H8z" />
+        </>
+      )}
+      {href === '/admin/tekster' && (
+        <>
+          <path d="M5 6.5h14M5 12h14M5 17.5h9" />
+        </>
       )}
       {href === '/admin/innstillinger' && (
         <>

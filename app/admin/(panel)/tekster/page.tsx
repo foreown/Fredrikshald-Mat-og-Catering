@@ -6,14 +6,14 @@ import type { SiteSetting } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminSettingsPage() {
+export default async function AdminTextsPage() {
   const context = await getOwnerContext();
   if (!context) return null;
 
   const { data } = await context.supabase
     .from('site_settings')
     .select('*')
-    .eq('area', 'innstillinger')
+    .eq('area', 'tekster')
     .order('sort_order', { ascending: true });
 
   const settings = (data ?? []) as SiteSetting[];
@@ -21,17 +21,17 @@ export default async function AdminSettingsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Innstillinger"
-        description="Kontaktinformasjon, logo og opplysninger om bedriften. Tekstene på selve sidene ligger under Tekster."
+        title="Tekster"
+        description="Alle overskrifter, ingresser og avsnitt på nettsiden. Velg en side i fanene under, endre det du vil, og trykk «Lagre endringer»."
       />
 
       {settings.length === 0 ? (
         <EmptyState
-          title="Ingen innstillinger funnet"
-          description="Det ser ut til at migrasjonene ikke er kjørt i Supabase ennå. Kjør dem i SQL Editor, og last siden på nytt."
+          title="Ingen tekster funnet"
+          description="Det ser ut til at migrasjonen 0004_innhold.sql ikke er kjørt i Supabase ennå. Kjør den i SQL Editor, og last siden på nytt."
         />
       ) : (
-        <SettingsForm settings={settings} />
+        <SettingsForm settings={settings} tabbed />
       )}
     </>
   );

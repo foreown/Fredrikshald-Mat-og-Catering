@@ -11,12 +11,14 @@ import { buildBreadcrumbJsonLd } from '@/lib/seo';
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: 'Galleri',
-  description:
-    'Bilder av mat og arrangementer fra Fredrikshald Mat & Catering UB i Halden. Alle bilder er våre egne.',
-  alternates: { canonical: '/galleri' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  return {
+    title: settings.gallery_eyebrow || 'Galleri',
+    description: settings.gallery_description,
+    alternates: { canonical: '/galleri' },
+  };
+}
 
 export default async function GalleryPage() {
   const [settings, images, categories] = await Promise.all([
@@ -31,14 +33,14 @@ export default async function GalleryPage() {
       <JsonLd
         data={buildBreadcrumbJsonLd(siteUrl, [
           { name: 'Forside', path: '/' },
-          { name: 'Galleri', path: '/galleri' },
+          { name: settings.gallery_eyebrow || 'Galleri', path: '/galleri' },
         ])}
       />
 
       <PageHeader
-        eyebrow="Galleri"
-        title="Bilder fra kjøkkenet vårt"
-        description="Alle bildene her er våre egne, tatt av det vi faktisk har laget."
+        eyebrow={settings.gallery_eyebrow}
+        title={settings.gallery_title}
+        description={settings.gallery_description}
       />
 
       <section className="section-after-header">
@@ -47,12 +49,12 @@ export default async function GalleryPage() {
             <GalleryGrid images={images} categories={categories} />
           ) : (
             <EmptyState
-              title="Vi legger ut bilder snart"
-              description="Galleriet fylles med bilder av maten vi lager. Følg oss gjerne på Instagram i mellomtiden."
+              title={settings.gallery_empty_title}
+              description={settings.gallery_empty_text}
               action={
                 settings.instagram_url ? (
                   <ButtonLink href={settings.instagram_url} variant="secondary">
-                    Åpne Instagram
+                    {settings.instagram_band_button}
                   </ButtonLink>
                 ) : null
               }

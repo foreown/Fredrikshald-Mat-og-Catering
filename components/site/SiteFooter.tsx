@@ -133,7 +133,7 @@ export function SiteFooter({ settings }: { settings: SettingsMap }) {
             © {year} {companyName}
             {orgNumber ? ` · Org.nr. ${orgNumber}` : ''}
           </p>
-          <p>Ungdomsbedrift ved Restaurant- og matfag</p>
+          <p>{settings.footer_note}</p>
         </div>
       </div>
     </footer>

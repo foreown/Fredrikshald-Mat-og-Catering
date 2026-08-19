@@ -5,7 +5,6 @@ import { useId, useMemo, useState } from 'react';
 import { ArrowIcon } from '@/components/site/Icons';
 import { ButtonLink } from '@/components/ui/Button';
 import { Field, SelectInput } from '@/components/ui/Field';
-import { EVENT_TYPES } from '@/lib/constants';
 import { buildMailto } from '@/lib/utils';
 import type { MenuCategory } from '@/types';
 
@@ -80,10 +79,14 @@ export function EventGuide({
   categories,
   email,
   companyName,
+  eventTypes,
+  note,
 }: {
   categories: MenuCategory[];
   email: string;
   companyName: string;
+  eventTypes: string[];
+  note: string;
 }) {
   const uid = useId();
   const [guests, setGuests] = useState<GuestRange | ''>('');
@@ -139,7 +142,7 @@ export function EventGuide({
             onChange={(event) => setEventType(event.target.value)}
           >
             <option value="">Velg …</option>
-            {EVENT_TYPES.map((type) => (
+            {eventTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
               </option>
@@ -209,9 +212,7 @@ export function EventGuide({
             </ul>
 
             <div className="mt-8 flex flex-col gap-3 border-t border-sand pt-6 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm leading-relaxed text-ink-soft">
-                Dette er kun et forslag til inspirasjon — ingen bestilling er sendt.
-              </p>
+              <p className="text-sm leading-relaxed text-ink-soft">{note}</p>
               <ButtonLink href={mailHref} size="md">
                 Be om tilbud
               </ButtonLink>

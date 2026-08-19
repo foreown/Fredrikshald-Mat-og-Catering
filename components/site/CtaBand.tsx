@@ -5,6 +5,7 @@ import type { SettingsMap } from '@/types';
 
 interface CtaBandProps {
   settings: SettingsMap;
+  /** Overstyrer teksten fra innstillingene — brukes av menysiden. */
   title?: string;
   description?: string;
   primaryLabel?: string;
@@ -13,9 +14,9 @@ interface CtaBandProps {
 
 export function CtaBand({
   settings,
-  title = 'Skal dere ha mat til noe?',
-  description = 'Fortell oss kort hva slags arrangement det er, hvor mange dere er og når det skjer — så kommer vi tilbake til deg.',
-  primaryLabel = 'Be om tilbud',
+  title,
+  description,
+  primaryLabel,
   subject = 'Forespørsel om catering',
 }: CtaBandProps) {
   const mailHref = buildMailto(
@@ -30,16 +31,18 @@ export function CtaBand({
         <Reveal>
           <div className="flex flex-col items-start gap-9 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <h2 className="text-display-md text-cream">{title}</h2>
-              <p className="mt-5 text-base leading-relaxed text-cream/70 sm:text-lg">{description}</p>
+              <h2 className="text-display-md text-cream">{title || settings.cta_title}</h2>
+              <p className="mt-5 text-base leading-relaxed text-cream/70 sm:text-lg">
+                {description || settings.cta_text}
+              </p>
             </div>
 
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
               <ButtonLink href={mailHref} variant="onDarkSolid" size="lg">
-                {primaryLabel}
+                {primaryLabel || settings.cta_primary_label}
               </ButtonLink>
               <ButtonLink href="/kontakt" variant="onDark" size="lg">
-                Send forespørsel
+                {settings.cta_secondary_label}
               </ButtonLink>
             </div>
           </div>

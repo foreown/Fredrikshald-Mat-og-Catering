@@ -24,15 +24,17 @@ export function InstagramBand({ settings }: { settings: SettingsMap }) {
                 <InstagramIcon />
               </span>
               <div>
-                <h2 className="font-display text-xl font-semibold text-ink">Følg oss på Instagram</h2>
+                <h2 className="font-display text-xl font-semibold text-ink">
+                  {settings.instagram_band_title}
+                </h2>
                 <p className="mt-1 text-sm text-ink-muted">
-                  Der legger vi ut bilder fra det vi lager: {handle}
+                  {settings.instagram_band_text} {handle}
                 </p>
               </div>
             </div>
 
             <ButtonLink href={url} variant="secondary" size="md">
-              Åpne Instagram
+              {settings.instagram_band_button}
             </ButtonLink>
           </div>
         </Reveal>

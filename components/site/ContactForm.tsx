@@ -4,12 +4,16 @@ import { useId, useState, type FormEvent } from 'react';
 import { CheckIcon, MailIcon } from '@/components/site/Icons';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Field, SelectInput, TextArea, TextInput } from '@/components/ui/Field';
-import { EVENT_TYPES } from '@/lib/constants';
+import { formatIsoDate } from '@/lib/calendar';
 import { buildMailto } from '@/lib/utils';
 
 interface ContactFormProps {
   email: string;
   companyName: string;
+  /** Arrangementstypene fra adminpanelet. */
+  eventTypes: string[];
+  /** Datoer bedriften er opptatt, som ISO-strenger. Brukes kun til å varsle. */
+  blockedDates: string[];
 }
 
 /**
@@ -17,7 +21,12 @@ interface ContactFormProps {
  * utfylt e-post og åpner e-postprogrammet til den besøkende, slik at
  * forespørselen kommer direkte i innboksen deres.
  */
-export function ContactForm({ email, companyName }: ContactFormProps) {
+export function ContactForm({
+  email,
+  companyName,
+  eventTypes,
+  blockedDates,
+}: ContactFormProps) {
   const uid = useId();
   const [name, setName] = useState('');
   const [replyEmail, setReplyEmail] = useState('');
@@ -29,6 +38,8 @@ export function ContactForm({ email, companyName }: ContactFormProps) {
   const [opened, setOpened] = useState(false);
   const [copied, setCopied] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
+
+  const dateIsBlocked = date !== '' && blockedDates.includes(date);
 
   const subject = eventType
     ? `Forespørsel om catering – ${eventType}`
@@ -112,13 +123,27 @@ export function ContactForm({ email, companyName }: ContactFormProps) {
           />
         </Field>
 
-        <Field id={`${uid}-date`} label="Dato for arrangementet" hint="Valgfritt">
+        <Field
+          id={`${uid}-date`}
+          label="Dato for arrangementet"
+          hint={dateIsBlocked ? undefined : 'Valgfritt'}
+        >
           <TextInput
             id={`${uid}-date`}
             type="date"
             value={date}
             onChange={(event) => setDate(event.target.value)}
+            aria-describedby={dateIsBlocked ? `${uid}-date-warning` : undefined}
           />
+          {dateIsBlocked && (
+            <p
+              id={`${uid}-date-warning`}
+              className="mt-2 rounded-card border border-copper-500/35 bg-copper-50 px-3.5 py-2.5 text-sm leading-relaxed text-copper-700"
+            >
+              Vi er dessverre opptatt {formatIsoDate(date)}. Du kan gjerne sende forespørselen
+              likevel — noen ganger får vi det til — men svaret kan bli nei.
+            </p>
+          )}
         </Field>
 
         <Field id={`${uid}-event`} label="Type arrangement">
@@ -128,7 +153,7 @@ export function ContactForm({ email, companyName }: ContactFormProps) {
             onChange={(event) => setEventType(event.target.value)}
           >
             <option value="">Velg …</option>
-            {EVENT_TYPES.map((type) => (
+            {eventTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
               </option>

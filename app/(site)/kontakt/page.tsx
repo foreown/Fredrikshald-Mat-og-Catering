@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AvailabilityCalendar } from '@/components/site/AvailabilityCalendar';
 import { ContactForm } from '@/components/site/ContactForm';
 import { Faq } from '@/components/site/Faq';
 import { FacebookIcon, InstagramIcon, MailIcon, PhoneIcon, PinIcon } from '@/components/site/Icons';
@@ -8,27 +9,49 @@ import { PageHeader } from '@/components/site/PageHeader';
 import { Reveal } from '@/components/site/Reveal';
 import { SectionHeading } from '@/components/site/SectionHeading';
 import { ButtonLink } from '@/components/ui/Button';
-import { getSettings } from '@/lib/data';
+import { blockedDateSet, todayIso } from '@/lib/calendar';
+import { FALLBACK_EVENT_TYPES } from '@/lib/constants';
+import {
+  getAvailabilityBlocks,
+  getEventTypes,
+  getFaqItems,
+  getSettings,
+} from '@/lib/data';
 import { getSiteUrl } from '@/lib/env';
-import { buildFaq } from '@/lib/faq';
 import { buildBreadcrumbJsonLd, buildFaqJsonLd } from '@/lib/seo';
 import { buildMailto } from '@/lib/utils';
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: 'Kontakt',
-  description:
-    'Ta kontakt med Fredrikshald Mat & Catering UB i Halden. Send en forespørsel om catering til selskap, møte eller arrangement.',
-  alternates: { canonical: '/kontakt' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  return {
+    title: settings.contact_eyebrow || 'Kontakt',
+    description: settings.contact_description,
+    alternates: { canonical: '/kontakt' },
+  };
+}
 
 export default async function ContactPage() {
-  const settings = await getSettings();
-  const siteUrl = getSiteUrl();
-  const faq = buildFaq(settings);
+  const [settings, faq, eventTypes, blocks] = await Promise.all([
+    getSettings(),
+    getFaqItems(),
+    getEventTypes(),
+    getAvailabilityBlocks(),
+  ]);
 
+  const siteUrl = getSiteUrl();
+  const today = todayIso();
   const phone = settings.phone?.trim();
+
+  const typeOptions =
+    eventTypes.length > 0
+      ? [...eventTypes.map((type) => type.title), 'Annet']
+      : [...FALLBACK_EVENT_TYPES];
+
+  const blockedDates = Array.from(blockedDateSet(blocks));
+  const showCalendar = Boolean(settings.contact_calendar_text?.trim());
+
   const mailHref = buildMailto(
     settings.email,
     'Forespørsel om catering',
@@ -40,23 +63,23 @@ export default async function ContactPage() {
       <JsonLd
         data={buildBreadcrumbJsonLd(siteUrl, [
           { name: 'Forside', path: '/' },
-          { name: 'Kontakt', path: '/kontakt' },
+          { name: settings.contact_eyebrow || 'Kontakt', path: '/kontakt' },
         ])}
       />
-      <JsonLd data={buildFaqJsonLd(faq.slice(0, 6))} />
+      {faq.length > 0 && <JsonLd data={buildFaqJsonLd(faq.slice(0, 6))} />}
 
       <PageHeader
-        eyebrow="Kontakt"
-        title="Ta kontakt med oss"
-        description="Alle forespørsler går på e-post. Fortell oss om anledningen, så kommer vi tilbake til deg."
+        eyebrow={settings.contact_eyebrow}
+        title={settings.contact_title}
+        description={settings.contact_description}
       />
 
       <section className="section-after-header">
         <div className="container-page">
           <div className="grid gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-16">
             <Reveal>
-              <div className="lg:sticky lg:top-28">
-                <h2 className="text-display-sm">Kontaktinformasjon</h2>
+              <div>
+                <h2 className="text-display-sm">{settings.contact_info_title}</h2>
 
                 <ul className="mt-8 space-y-6">
                   <li>
@@ -150,44 +173,71 @@ export default async function ContactPage() {
 
                 <div className="mt-10 flex flex-col gap-3">
                   <ButtonLink href={mailHref} size="lg">
-                    Ta kontakt på e-post
+                    {settings.contact_button_label}
                   </ButtonLink>
                   <p className="text-sm leading-relaxed text-ink-soft">
-                    Vi svarer så raskt vi kan. Vi er elever, så det kan gå litt tid i skoletiden.
+                    {settings.contact_response_note}
                   </p>
                 </div>
               </div>
             </Reveal>
 
             <Reveal delay={100}>
-              <h2 className="text-display-sm">Send en forespørsel</h2>
-              <p className="prose-body mt-4 max-w-xl">
-                Fyll ut det du vet så langt. Skjemaet setter sammen en e-post du sender selv — vi
-                tar ikke imot bestillinger eller betaling på nettsiden.
-              </p>
+              <h2 className="text-display-sm">{settings.contact_form_title}</h2>
+              <p className="prose-body mt-4 max-w-xl">{settings.contact_form_text}</p>
               <div className="mt-8">
-                <ContactForm email={settings.email} companyName={settings.company_name} />
+                <ContactForm
+                  email={settings.email}
+                  companyName={settings.company_name}
+                  eventTypes={typeOptions}
+                  blockedDates={blockedDates}
+                />
               </div>
             </Reveal>
           </div>
         </div>
       </section>
 
-      <section className="section border-t border-sand bg-cream-100">
-        <div className="container-page">
-          <SectionHeading eyebrow="Vanlige spørsmål" title="Godt å vite" />
-          <div className="mt-10 max-w-3xl">
-            <Faq entries={faq.slice(0, 6)} />
-            <p className="mt-8 text-sm text-ink-soft">
-              Finner du ikke svaret?{' '}
-              <Link href="/faq" className="text-pine underline underline-offset-4 hover:text-copper-600">
-                Se alle spørsmål
-              </Link>
-              .
-            </p>
+      {showCalendar && (
+        <section id="kalender" className="section-tight border-t border-sand bg-cream-100">
+          <div className="container-page">
+            <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16">
+              <Reveal>
+                <h2 className="text-display-sm">{settings.contact_calendar_title}</h2>
+                <p className="prose-body mt-5 max-w-lg">{settings.contact_calendar_text}</p>
+              </Reveal>
+
+              <Reveal delay={100}>
+                <AvailabilityCalendar blocks={blocks} today={today} />
+              </Reveal>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {faq.length > 0 && (
+        <section className="section border-t border-sand bg-cream">
+          <div className="container-page">
+            <SectionHeading
+              eyebrow={settings.faq_eyebrow}
+              title={settings.contact_faq_title}
+            />
+            <div className="mt-10 max-w-3xl">
+              <Faq entries={faq.slice(0, 6)} />
+              <p className="mt-8 text-sm text-ink-soft">
+                Finner du ikke svaret?{' '}
+                <Link
+                  href="/faq"
+                  className="text-pine underline underline-offset-4 hover:text-copper-600"
+                >
+                  Se alle spørsmål
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }

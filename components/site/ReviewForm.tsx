@@ -5,12 +5,19 @@ import { CheckIcon } from '@/components/site/Icons';
 import { StarShape } from '@/components/site/Stars';
 import { Button } from '@/components/ui/Button';
 import { Field, SelectInput, TextArea, TextInput } from '@/components/ui/Field';
-import { EVENT_TYPES, REVIEW_LIMITS } from '@/lib/constants';
+import { REVIEW_LIMITS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
-export function ReviewForm() {
+interface ReviewFormProps {
+  /** Arrangementstypene som vises i nedtrekkslisten. Redigeres i adminpanelet. */
+  eventTypes: string[];
+  /** Kvitteringsteksten, redigerbar under Tekster -> Anmeldelser. */
+  thanksMessage: string;
+}
+
+export function ReviewForm({ eventTypes, thanksMessage }: ReviewFormProps) {
   const uid = useId();
   const [rating, setRating] = useState(0);
   const [name, setName] = useState('');
@@ -74,7 +81,7 @@ export function ReviewForm() {
       }
 
       setStatus('sent');
-      setMessage(data.message ?? 'Takk for anmeldelsen. Den blir gjennomgått før den publiseres.');
+      setMessage(data.message || thanksMessage);
     } catch {
       setStatus('error');
       setMessage('Vi fikk ikke kontakt med serveren. Sjekk internettforbindelsen og prøv igjen.');
@@ -165,7 +172,7 @@ export function ReviewForm() {
             onChange={(event) => setEventType(event.target.value)}
           >
             <option value="">Velg …</option>
-            {EVENT_TYPES.map((type) => (
+            {eventTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
               </option>

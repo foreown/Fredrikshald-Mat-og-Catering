@@ -74,30 +74,40 @@ https://github.com/<ditt-brukernavn>/fredrikshald-mat-catering.git
 
 ### STEG 2 — Last opp prosjektet til GitHub
 
-Du kan velge mellom to måter. **Metode A** krever ingen programmer og er
-enklest første gang.
+Prosjektet har **117 filer**. Det er viktig, fordi GitHub sin dra-og-slipp i
+nettleseren bare klarer **100 filer om gangen**. Bruker du den, mister du
+filer — og da feiler byggingen senere med meldingen
+«Couldn't find any `pages` or `app` directory».
 
-#### Metode A — dra og slipp i nettleseren
+Bruk derfor **Metode A**. Den er både enklest og tryggest.
 
-1. På siden «Quick setup», klikk lenken **uploading an existing file**
-   (står i setningen «…or push an existing repository from the command line»,
-   rett over: «You can also upload existing files»).
-2. Åpne prosjektmappen på maskinen din.
-3. Merk **alt innholdet i mappen** (ikke selve mappen) og dra det inn i
-   nettleservinduet.
-   - På Windows: `Ctrl + A` inne i mappen, så dra.
-   - På Mac: `Cmd + A` inne i mappen, så dra.
-   - Får du ikke med `.gitignore` og `.env.example` (filer som starter med
-     punktum), må du slå på visning av skjulte filer:
-     **Windows:** Utforsker → Vis → huk av «Skjulte elementer».
-     **Mac:** trykk `Cmd + Shift + .` i Finder.
-   - Har du en `node_modules`-mappe, **ikke** last den opp. Den er stor og
-     trengs ikke.
-4. Vent til alle filene er lastet opp (det tar litt tid).
-5. Skriv i feltet **Commit changes**: `Første versjon av nettsiden`
-6. Klikk **Commit changes**.
+#### Metode A — GitHub Desktop (anbefalt, ingen terminal)
 
-#### Metode B — med Git fra terminalen
+1. Last ned og installer GitHub Desktop: <https://desktop.github.com>
+2. Åpne programmet og logg inn med GitHub-kontoen din.
+3. Velg **File → Add local repository…**
+4. Klikk **Choose…** og pek på prosjektmappen `fredrikshald-mat-catering`.
+5. Du får beskjed om at mappen ikke er et Git-repository. Klikk lenken
+   **create a repository** i den meldingen.
+6. I vinduet som åpnes:
+   - **Name:** `fredrikshald-mat-catering`
+   - La **Git ignore** og **License** stå på **None** — prosjektet har
+     allerede en `.gitignore`.
+   - Klikk **Create repository**.
+7. Nede til venstre står det nå «117 changed files». Skriv i feltet
+   **Summary**: `Første versjon av nettsiden`, og klikk
+   **Commit to main**.
+8. Klikk **Publish repository** øverst.
+   - **Name:** `fredrikshald-mat-catering`
+   - Fjern haken for **Keep this code private** hvis du vil at repoet skal
+     være åpent. Begge deler fungerer likt med Vercel.
+   - Klikk **Publish repository**.
+
+Ferdig. Har du allerede opprettet et tomt repo i steg 1, kan du enten slette
+det på GitHub først, eller gi dette et litt annet navn — Vercel bryr seg ikke
+om navnet.
+
+#### Metode B — Git fra terminalen
 
 Har du Git installert (<https://git-scm.com/downloads>):
 
@@ -118,8 +128,48 @@ Bytt ut `<ditt-brukernavn>` med ditt eget GitHub-brukernavn.
 > GitHub → Settings → Developer settings → Personal access tokens →
 > Tokens (classic) → Generate new token → huk av **repo**.
 
-**Kontroll:** Last inn GitHub-siden på nytt. Du skal nå se mapper som `app`,
-`components`, `lib` og `supabase`, samt filene `README.md` og `package.json`.
+#### Metode C — dra og slipp i nettleseren (siste utvei)
+
+Fungerer, men **du må laste opp i flere omganger**, ellers mister du filer.
+
+1. På repo-siden: **Add file → Upload files**.
+2. Dra opp **én mappe om gangen**, og klikk **Commit changes** mellom hver:
+
+   | Omgang | Dra opp                                                        |
+   | ------ | -------------------------------------------------------------- |
+   | 1      | mappen `app`                                                    |
+   | 2      | mappen `components`                                             |
+   | 3      | mappen `lib`                                                    |
+   | 4      | mappene `types`, `public` og `supabase`                         |
+   | 5      | alle løse filer i rotmappen (`package.json`, `next.config.mjs`, `tsconfig.json`, `tailwind.config.ts`, `postcss.config.mjs`, `eslint.config.mjs`, `middleware.ts`, `next-env.d.ts`, `README.md`, `DEPLOY.md`, `.gitignore`, `.env.example`) |
+
+3. Filer som starter med punktum (`.gitignore`, `.env.example`) er skjult i
+   filutforskeren. Slå på visning av skjulte filer:
+   **Windows:** Utforsker → Vis → huk av «Skjulte elementer».
+   **Mac:** trykk `Cmd + Shift + .` i Finder.
+4. Har du en `node_modules`-mappe, **ikke** last den opp.
+
+### KONTROLL — dette må ligge øverst i repoet
+
+Last inn GitHub-siden på nytt. Rett under repo-navnet skal du se **nøyaktig
+denne listen** på øverste nivå:
+
+```
+app/            components/     lib/           public/
+supabase/       types/          .env.example   .gitignore
+DEPLOY.md       README.md       eslint.config.mjs
+middleware.ts   next-env.d.ts   next.config.mjs
+package.json    postcss.config.mjs   tailwind.config.ts   tsconfig.json
+```
+
+- Mangler **`app`**, feiler byggingen. Last opp mappen på nytt.
+- Ser du i stedet én enkelt mappe som heter `fredrikshald-mat-catering`, har
+  du lastet opp selve mappen i stedet for innholdet. Enten laster du opp på
+  nytt, eller så setter du **Root Directory** til
+  `fredrikshald-mat-catering` i Vercel (se steg 10).
+- Klikk deg inn i `app` og sjekk at både `(site)` og `admin` ligger der.
+  Mappenavn med parenteser er riktig — det er en Next.js-funksjon som
+  grupperer sider uten å påvirke adressene.
 
 ---
 
@@ -170,16 +220,19 @@ Nå oppretter vi tabellene.
 5. Klikk **Run** (eller `Ctrl + Enter`).
 6. Det skal stå **Success. No rows returned** nederst.
 
-Gjenta det samme for de to andre filene, i denne rekkefølgen:
+Gjenta det samme for de tre andre filene, i denne rekkefølgen. **Rekkefølgen
+er viktig** — hver fil bygger på den forrige.
 
-| Rekkefølge | Fil                                   | Hva den gjør                                  |
-| ---------- | ------------------------------------- | --------------------------------------------- |
-| 1          | `supabase/migrations/0001_schema.sql` | Tabeller, sikkerhetsregler og funksjoner      |
-| 2          | `supabase/migrations/0002_storage.sql`| Bildelagring og tilgangsregler for filer      |
-| 3          | `supabase/migrations/0003_seed.sql`   | Kategorier og redigerbare tekster             |
+| Rekkefølge | Fil                                    | Hva den gjør                                          |
+| ---------- | -------------------------------------- | ----------------------------------------------------- |
+| 1          | `supabase/migrations/0001_schema.sql`  | Tabeller, sikkerhetsregler og funksjoner              |
+| 2          | `supabase/migrations/0002_storage.sql` | Bildelagring og tilgangsregler for filer              |
+| 3          | `supabase/migrations/0003_seed.sql`    | Kategorier                                            |
+| 4          | `supabase/migrations/0004_innhold.sql` | Arrangementer, spørsmål og svar, kalender og alle tekstene |
 
-**Kontroll:** Klikk **Table Editor** i menyen. Du skal se tabellene
-`gallery`, `gallery_categories`, `menu_categories`, `menu_items`, `profiles`,
+**Kontroll:** Klikk **Table Editor** i menyen. Du skal se disse elleve
+tabellene: `availability_blocks`, `event_types`, `faq_items`, `gallery`,
+`gallery_categories`, `menu_categories`, `menu_items`, `profiles`,
 `review_submissions`, `reviews` og `site_settings`.
 
 ### STEG 6 — Sjekk at bildelagringen er på plass
@@ -420,6 +473,16 @@ gå tilbake til steg 9.
 
 **Kontroll:** åpne `/galleri` i en ny fane. Bildet skal ligge der.
 
+### STEG 17b — Merk en dag i kalenderen
+
+1. Klikk **Kalender** i adminmenyen.
+2. Klikk på en dag fram i tid. Den blir kobberfarget, og du får en bekreftelse.
+3. Åpne `/kontakt` i en ny fane og bla ned til «Når vi er opptatt».
+   Dagen skal være merket der også.
+4. Gå tilbake til kalenderen og klikk på dagen igjen for å frigi den.
+
+Skal dere være borte flere dager, bruk **Legg til periode** i stedet.
+
 ### STEG 18 — Legg inn den første menyretten
 
 1. Klikk **Meny** i adminmenyen.
@@ -555,8 +618,8 @@ Kryss av etter hvert:
 
 **Supabase**
 
-- [ ] Alle tre SQL-filene er kjørt uten feil
-- [ ] Alle åtte tabeller finnes
+- [ ] Alle fire SQL-filene er kjørt uten feil, i riktig rekkefølge
+- [ ] Alle elleve tabeller finnes
 - [ ] Row Level Security er på for alle tabeller
 - [ ] Bucketen `media` finnes og er offentlig
 - [ ] De fire storage-policyene er på plass
@@ -570,6 +633,12 @@ Kryss av etter hvert:
 - [ ] Bildeopplasting virker, og bildet vises i galleriet
 - [ ] Sletting av bilde fjerner det både fra siden og fra lagringen
 - [ ] Menyretter kan legges til, endres og skjules
+- [ ] Tekster kan endres under Tekster og slår gjennom på nettsiden
+- [ ] Arrangementer kan legges til, og dukker opp i nedtrekkslistene
+- [ ] Spørsmål og svar kan legges til og endres
+- [ ] Kalenderen kan merke og frigi dager
+- [ ] Merkede dager vises på kontaktsiden
+- [ ] Kontaktskjemaet advarer når man velger en opptatt dato
 - [ ] «Pris på forespørsel» vises når prisfeltet står tomt
 - [ ] Anmeldelse kan sendes inn og havner på «venter»
 - [ ] Godkjent anmeldelse vises offentlig
@@ -590,7 +659,35 @@ Kryss av etter hvert:
 
 ## Feilsøking
 
-### Vercel-buildet feiler
+### «Couldn't find any `pages` or `app` directory»
+
+Dette er den vanligste feilen, og den handler aldri om koden — `app`-mappen
+har ikke kommet med opp til GitHub, eller Vercel bygger i feil mappe.
+
+**Sjekk i denne rekkefølgen:**
+
+1. **Ligger `app` øverst i repoet?**
+   Åpne repoet på GitHub. Ser du ikke en mappe som heter `app` i listen, er
+   det årsaken. Lastet du opp via dra-og-slipp i nettleseren, stoppet GitHub
+   på 100 filer — prosjektet har 117. Last opp `app`-mappen på nytt (eller
+   gjør hele opplastingen om igjen med GitHub Desktop, se steg 2, metode A).
+
+2. **Ligger alt inne i en ekstra mappe?**
+   Ser du bare én mappe, `fredrikshald-mat-catering`, og ingenting annet, har
+   du lastet opp selve mappen i stedet for innholdet. To løsninger:
+   - Enkleste: Vercel → prosjektet → **Settings → Build and Deployment →
+     Root Directory** → skriv `fredrikshald-mat-catering` → **Save** →
+     **Deployments** → «…» → **Redeploy**.
+   - Eller: slett filene på GitHub og last opp innholdet i mappen på nytt.
+
+3. **Ligger `app` der, men buildet feiler likevel?**
+   Klikk deg inn i `app` på GitHub og sjekk at `layout.tsx`, `(site)` og
+   `admin` er der. Mangler undermappene, last dem opp på nytt.
+
+Etter at du har rettet det: Vercel bygger automatisk på nytt når GitHub får
+nye filer. Skjer ingenting, gå til **Deployments** → «…» → **Redeploy**.
+
+### Vercel-buildet feiler av andre grunner
 
 1. Åpne Vercel → prosjektet → **Deployments** → klikk den røde deployen →
    **Building**-loggen.
@@ -711,6 +808,16 @@ Du skal aldri måtte åpne VS Code eller GitHub for å endre innhold.
 
 | Du vil …                          | Slik gjør du det                                                       |
 | --------------------------------- | ---------------------------------------------------------------------- |
+| Endre en overskrift eller tekst   | Tekster → velg riktig side i fanene → **Lagre endringer**               |
+| Endre teksten på forsiden         | Tekster → **Forside**                                                   |
+| Endre personvernerklæringen       | Tekster → **Personvern**                                                |
+| Legge til et arrangement          | Arrangementer → **Nytt arrangement**                                    |
+| Skjule et arrangement             | Arrangementer → Rediger → skru av **Vis på nettsiden**                  |
+| Legge til et spørsmål og svar     | Vanlige spørsmål → **Nytt spørsmål**                                    |
+| Merke én dag som opptatt          | Kalender → klikk på dagen                                               |
+| Merke en hel uke eller ferie      | Kalender → **Legg til periode** → velg fra- og til-dato                 |
+| Frigi en dag igjen                | Kalender → klikk på den merkede dagen, eller **Fjern** i listen         |
+| Holde av dager uten å vise dem    | Kalender → Legg til periode → skru av **Vis perioden på nettsiden**     |
 | Legge til et bilde                | Galleri → **Last opp bilde**                                            |
 | Endre tittel eller kategori       | Galleri → **Rediger** på bildet                                         |
 | Skjule et bilde midlertidig       | Galleri → Rediger → skru av **Vis bildet på nettsiden**                 |
@@ -724,10 +831,8 @@ Du skal aldri måtte åpne VS Code eller GitHub for å endre innhold.
 | Godkjenne en anmeldelse           | Anmeldelser → **Godkjenn**                                              |
 | Avvise en anmeldelse              | Anmeldelser → **Avvis**                                                 |
 | Slette en anmeldelse              | Anmeldelser → **Slett**                                                 |
-| Bytte e-post eller telefon        | Innstillinger → Kontakt → **Lagre endringer**                           |
-| Endre teksten på forsiden         | Innstillinger → Forside                                                 |
+| Bytte e-post eller telefon        | Innstillinger → Kontaktinformasjon → **Lagre endringer**                |
 | Legge inn logoen deres            | Innstillinger → Bedrift → **Logo**                                      |
-| Fylle inn svar i «Vanlige spørsmål» | Innstillinger → Vanlige spørsmål                                      |
 
 Endringer i adminpanelet slår gjennom på nettsiden innen ett minutt. Ny
 deploy er ikke nødvendig.
