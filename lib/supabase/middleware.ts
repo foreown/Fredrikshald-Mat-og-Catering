@@ -14,8 +14,7 @@ export async function updateSession(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Uten konfigurasjon lar vi forespørselen gå videre — sidene viser da en
-  // tydelig melding om at Supabase mangler i stedet for å krasje.
+  // Uten konfigurasjon lar vi forespørselen gå videre.
   if (!url || !anonKey) {
     return response;
   }
@@ -25,11 +24,28 @@ export async function updateSession(request: NextRequest) {
       getAll() {
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
+
+      setAll(
+        cookiesToSet: {
+          name: string;
+          value: string;
+          options: {
+            path?: string;
+            domain?: string;
+            maxAge?: number;
+            expires?: Date;
+            httpOnly?: boolean;
+            secure?: boolean;
+            sameSite?: 'lax' | 'strict' | 'none';
+          };
+        }[]
+      ) {
         cookiesToSet.forEach(({ name, value }) => {
           request.cookies.set(name, value);
         });
+
         response = NextResponse.next({ request });
+
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });
@@ -49,6 +65,7 @@ export async function updateSession(request: NextRequest) {
     redirectUrl.pathname = '/admin/login';
     redirectUrl.search = '';
     redirectUrl.searchParams.set('neste', pathname);
+
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -56,6 +73,7 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/admin';
     redirectUrl.search = '';
+
     return NextResponse.redirect(redirectUrl);
   }
 
