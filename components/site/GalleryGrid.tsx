@@ -42,13 +42,28 @@ export function GalleryGrid({ images, categories }: GalleryGridProps) {
     [filtered.length],
   );
 
+  const isOpen = openIndex !== null;
+
+  // Lås bakgrunnen og styr fokus — kun når lightboxen åpnes og lukkes.
+  // Denne må ikke avhenge av hvilket bilde som vises, ellers ville fokus
+  // hoppet til lukkeknappen hver gang man bladde til neste bilde.
   useEffect(() => {
-    if (openIndex === null) return;
+    if (!isOpen) return;
 
     lastFocused.current = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     closeButtonRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      lastFocused.current?.focus?.();
+    };
+  }, [isOpen]);
+
+  // Tastatursnarveier. Denne kan gjerne kobles opp på nytt — den rører ikke fokus.
+  useEffect(() => {
+    if (!isOpen) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') close();
@@ -57,12 +72,8 @@ export function GalleryGrid({ images, categories }: GalleryGridProps) {
     };
 
     window.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = previousOverflow;
-      lastFocused.current?.focus?.();
-    };
-  }, [openIndex, close, step]);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, close, step]);
 
   // Bytter man kategori mens lightboxen er åpen, lukkes den.
   useEffect(() => {

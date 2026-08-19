@@ -18,17 +18,34 @@ export function Modal({ open, title, description, onClose, children, footer, siz
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
+  /*
+   * onClose er som regel en ny funksjon for hver tegning av skjemaet.
+   * Vi legger den i en ref, slik at effekten under kun avhenger av `open`.
+   * Uten dette ville effekten kjørt på nytt for hvert tastetrykk, og
+   * markøren ville hoppet ut av feltet du skriver i.
+   */
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
 
     previouslyFocused.current = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    closeRef.current?.focus();
+
+    // Sett markøren i det første skjemafeltet. Finnes det ingen felter
+    // (for eksempel i en «vil du slette?»-boks), går fokus til lukkeknappen.
+    const firstField = panelRef.current?.querySelector<HTMLElement>(
+      'input:not([type="hidden"]):not([type="file"]):not([disabled]), select:not([disabled]), textarea:not([disabled])',
+    );
+    (firstField ?? closeRef.current)?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -57,7 +74,8 @@ export function Modal({ open, title, description, onClose, children, footer, siz
       document.body.style.overflow = previousOverflow;
       previouslyFocused.current?.focus?.();
     };
-  }, [open, onClose]);
+    // Med vilje kun `open` her — se kommentaren over onCloseRef.
+  }, [open]);
 
   if (!open) return null;
 
