@@ -57,4 +57,3 @@ export async function getSignedInUser() {
   } = await supabase.auth.getUser();
   return user;
 }
-
